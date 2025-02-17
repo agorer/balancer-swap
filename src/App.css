@@ -1,0 +1,38 @@
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.card {
+  padding: 2em;
+}
+
+.small-icon {
+    filter: invert(1);
+    width: 16px;
+    height: 16px;
+}
+
+.medium-icon {
+    filter: invert(1);
+    width: 32px;
+    height: 32px;
+}
+
+.amount-info {
+    border: 1px solid #c7c1c0;
+    border-radius: 10px;
+    display: flex;
+}
+
+.column {
+    flex: 1;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+.wallet {
+    display: flex;
+}
