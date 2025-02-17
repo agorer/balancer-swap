@@ -11,8 +11,10 @@ import { simulateSwap, swap } from "./swapService"
 export default function SwapForm() {
   const account = useAccount()
   const chainId = useChainId()
-  const inToken = useToken(chainId, 'ETH')
-  const outToken = useToken(chainId, 'USDC')
+  const [ inTokenLabel, setInTokenLabel ] = useState('ETH')
+  const [ outTokenLabel, setOutTokenLabel ] = useState('USDC')
+  const inToken = useToken(chainId, inTokenLabel)
+  const outToken = useToken(chainId, outTokenLabel)
 
   const [ amount, setAmount ] = useState(0)
   const [ debouncedAmount ] = useDebounce(amount, 500);
@@ -30,6 +32,12 @@ export default function SwapForm() {
 
     alert(`You have received ${receivedAmount?.toSignificant(6)} ${outToken?.symbol}`)
   }
+
+  function handleSwitch() {
+    setInTokenLabel(outTokenLabel)
+    setOutTokenLabel(inTokenLabel)
+    setAmount(0)
+  }
   
   return (
     <>
@@ -39,7 +47,7 @@ export default function SwapForm() {
           amount={amount}
           onChange={setAmount} />
           
-        <img src={switchIcon} className="medium-icon" />
+        <img src={switchIcon} className="medium-icon clickable" onClick={ handleSwitch } />
         
         <AmountInfoOut chainId={chainId}
           token={outToken}
