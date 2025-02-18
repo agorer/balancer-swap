@@ -15,6 +15,7 @@ import {
   QueryClient,
 } from "@tanstack/react-query"
 
+import MessagesProvider from './shared/MessagesProvider'
 import Swap from './swap/Swap'
 
 const config = getDefaultConfig({
@@ -32,7 +33,9 @@ function App() {
       <WagmiProvider config={config}>
         <QueryClientProvider client={queryClient}>
           <RainbowKitProvider>
-            <Swap />
+            <MessagesProvider>
+              <Swap />
+            </MessagesProvider>
           </RainbowKitProvider>
         </QueryClientProvider>
       </WagmiProvider>   

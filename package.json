@@ -13,6 +13,7 @@
     "@balancer/sdk": "^2.1.0",
     "@rainbow-me/rainbowkit": "^2.2.3",
     "@tanstack/react-query": "^5.66.0",
+    "fp-ts": "^2.16.9",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "use-debounce": "^10.0.4",

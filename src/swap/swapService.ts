@@ -5,7 +5,6 @@ import {
   createPublicClient,
   http } from "viem"
 import {
-  BalancerApi,
   SwapKind,
   Token,
   TokenAmount,
@@ -14,6 +13,8 @@ import {
   Slippage,
   SwapBuildOutputExactIn
 } from "@balancer/sdk"
+
+import * as E from 'fp-ts/Either'
 
 import { getChain } from '../services/chainService'
 import { buildBalancerClient } from "../services/balancerApi"
@@ -25,8 +26,8 @@ export async function simulateSwap(
   inToken: Token | undefined,
   outToken: Token | undefined,
   amount: number
-): Promise<number> {
-  if (!chainId || !inToken || !outToken || !amount) return 0
+): Promise<E.Either<string, number>> {
+  if (!chainId || !inToken || !outToken || !amount) return E.right(0)
   
   const balancerApi = buildBalancerClient(chainId)
 
@@ -40,12 +41,12 @@ export async function simulateSwap(
     swapAmount: TokenAmount.fromHumanAmount(inToken, `${amount}`)
   })
 
-  if (paths.length === 0) return 0 // FIXME: should show some kind of error
+  if (paths.length === 0) return E.left('Unable to simulate (missing paths)')
 
   const swap = new Swap({ chainId, paths, swapKind })
   const simulatedResult = await swap.query() as ExactInQueryOutput
 
-  return Number(simulatedResult.expectedAmountOut.toSignificant())
+  return E.right(Number(simulatedResult.expectedAmountOut.toSignificant()))
 }
 
 export async function swap(
@@ -54,9 +55,10 @@ export async function swap(
   inToken: Token | undefined,
   outToken: Token | undefined,
   amount: number
-) : Promise<TokenAmount | undefined> {
-  if (!userAddress || !inToken || !outToken || !amount) return // FIXME: should show some kind of error
+) : Promise<E.Either<string, TokenAmount>> {
 
+  if (!userAddress || !inToken || !outToken || !amount) return E.left('Unable to swap (missing parameters)')
+  
   const balancerApi = buildBalancerClient(chainId)
 
   const swapKind = SwapKind.GivenIn
@@ -69,7 +71,7 @@ export async function swap(
     swapAmount: TokenAmount.fromHumanAmount(inToken, `${amount}`)
   })
 
-  if (paths.length === 0) return  // FIXME: should show some kind of error
+  if (paths.length === 0) return E.left('Unable to swap (no paths found)')
 
   const swap = new Swap({ chainId, paths, swapKind })
   const simulatedResult = await swap.query() as ExactInQueryOutput
@@ -109,9 +111,7 @@ export async function swap(
   })
   const txReceipt = await publicClient.waitForTransactionReceipt({ hash: txHash })
 
-  if (txReceipt.status === 'reverted') return // FIXME: throw some kind of error
+  if (txReceipt.status === 'reverted') return E.left('Unable to swap (transaction reverted)')
 
-  console.log(txReceipt)
-
-  return txParams.minAmountOut
+  return E.right(txParams.minAmountOut)
 }
