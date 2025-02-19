@@ -13,6 +13,7 @@ export default function AmountInfoIn(props: {
 }) {
   const balance = useTokenBalance(props.chainId, props.token?.address)
   const priceImpact = useTokenPrice(props.chainId, props.token)
+  const hasEnoughTokens = balance ? (Number(balance.formatted) - props.amount) > 0 : true
 
   return(
     <div className="amount-info">
@@ -27,8 +28,8 @@ export default function AmountInfoIn(props: {
       </div>
       <div className="column">
         <div className="token">{props.token?.symbol}</div>
-        <div className="wallet">
-          <div className="amount">{balance?.formatted}</div>
+        <div className="wallet" title={hasEnoughTokens ? '' : 'Exceeds balance'}>
+          <div className={`amount ${hasEnoughTokens ? '' : 'error-amount'}`}>{balance?.formatted}</div>
           <img src={walletIcon} className="small-icon" alt="Wallet amount"/>
         </div>
       </div>
