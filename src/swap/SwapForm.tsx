@@ -5,14 +5,15 @@ import { pipe } from 'fp-ts/function'
 
 import AmountInfoIn from "./AmountInfoIn"
 import AmountInfoOut from "./AmountInfoOut"
-import switchIcon from '../assets/switch.png'
 import { useChainId, useAccount } from 'wagmi'
 import { useToken } from '../services/tokenService'
 import { simulateSwap, swap } from "./swapService"
 import { MessagesContext } from '../shared/MessagesProvider'
+import SwitchIcon from '../assets/SwitchIcon'
 
 export default function SwapForm() {
   const setMessages = useContext(MessagesContext).setMessages
+  const [loading, setLoading] = useState(false)
   const account = useAccount()
   const chainId = useChainId()
   const [ inTokenLabel, setInTokenLabel ] = useState('ETH')
@@ -37,6 +38,7 @@ export default function SwapForm() {
   useEffect(() => { handleAmountChange(debouncedAmount) }, [debouncedAmount])
 
   async function handleSwap() {
+    setLoading(true)
     const result = await swap(account.address, chainId, inToken, outToken, amount)
     pipe(result,
       E.match(
@@ -48,6 +50,7 @@ export default function SwapForm() {
         }
       )
     )
+    setLoading(false)
   }
 
   function handleSwitch() {
@@ -58,21 +61,32 @@ export default function SwapForm() {
   
   return (
     <>
-      <div className="swap-form">
-        <AmountInfoIn chainId={chainId}
-          token={inToken}
-          amount={amount}
-          onChange={setAmount} />
+      <div className="swap-container">
+        <div className="swap-card">
+          <div className="swap-header">
+            <div>
+              <h1 className="swap-title">Swap Tokens</h1>
+              <p className="swap-subtitle">Exchange ETH and USDC</p>
+            </div>
+          </div>
           
-        <img src={switchIcon} className="medium-icon clickable" onClick={ handleSwitch } />
+          <AmountInfoIn chainId={chainId}
+            token={inToken}
+            amount={amount}
+            onChange={setAmount} />
+              
+          <div className="swap-direction-btn-container">
+            <button onClick={handleSwitch} className="swap-direction-btn"><SwitchIcon /></button>
+          </div>
         
-        <AmountInfoOut chainId={chainId}
-          token={outToken}
-          calculatedAmount={calculatedAmount} />
-      </div>
+          <AmountInfoOut chainId={chainId}
+            token={outToken}
+            calculatedAmount={calculatedAmount} />
 
-      <div className ="footer">
-        <button onClick={ handleSwap }>Swap</button>
+          <button onClick={handleSwap} disabled={(amount === 0) || loading} className="swap-button">
+            {loading ? "Swapping..." : "Swap"}
+          </button>
+        </div>
       </div>
     </>
   )
