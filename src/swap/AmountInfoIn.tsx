@@ -17,11 +17,10 @@ export default function AmountInfoIn(props: {
 }) {
   const balance = useTokenBalance(props.chainId, props.token?.address)
   const priceImpact = useTokenPrice(props.chainId, props.token)
-  const hasEnoughTokens = balance ? (Number(balance.formatted) - props.amount) > 0 : true
+  const hasEnoughTokens = balance ? (Number(balance.formatted) - props.amount) > 0 : false
   const tokenLogo = getChainIcon(props.token?.symbol)
 
   function onAmountChange(e: React.ChangeEvent<HTMLInputElement>) {
-    if (e.target.value === '') return
     return props.onChange(Number(e.target.value))
   }
 

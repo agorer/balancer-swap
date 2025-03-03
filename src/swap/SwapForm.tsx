@@ -3,6 +3,7 @@ import { useDebounce } from 'use-debounce'
 import * as E from 'fp-ts/Either'
 import { pipe } from 'fp-ts/function'
 
+import { useTokenBalance } from '../services/balanceService'
 import AmountInfoIn from "./AmountInfoIn"
 import AmountInfoOut from "./AmountInfoOut"
 import { useChainId, useAccount } from 'wagmi'
@@ -21,11 +22,15 @@ export default function SwapForm() {
   const inToken = useToken(chainId, inTokenLabel)
   const outToken = useToken(chainId, outTokenLabel)
 
-  const [ amount, setAmount ] = useState(0)
+  const [ amount, setAmount ] = useState<number>(0)
   const [ debouncedAmount ] = useDebounce(amount, 500);
   const [ calculatedAmount, setCalculatedAmount ] = useState(0)
 
-  async function handleAmountChange(amount: number) {
+  const balance = useTokenBalance(chainId, inToken?.address)
+  const hasEnoughTokens = balance ? (Number(balance.formatted) - amount) > 0 : false
+
+
+  async function handleAmountChange(amount: number) {    
     const simulationResult = await simulateSwap(chainId, inToken, outToken, amount)
     pipe(simulationResult,
       E.match(
@@ -83,7 +88,9 @@ export default function SwapForm() {
             token={outToken}
             calculatedAmount={calculatedAmount} />
 
-          <button onClick={handleSwap} disabled={(amount === 0) || loading} className="swap-button">
+          <button onClick={handleSwap}
+            disabled={(amount === 0) || !hasEnoughTokens || loading}
+            className="swap-button">
             {loading ? "Swapping..." : "Swap"}
           </button>
         </div>
